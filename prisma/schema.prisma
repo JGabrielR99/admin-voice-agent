@@ -1,0 +1,103 @@
+// schema.prisma (JSON fields changed to String)
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+   
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  clinics   Clinic[]
+  agents    Agent[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Clinic {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  calls     Call[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Agent {
+  id           String   @id @default(uuid())
+  externalId   String?  @unique
+  name         String?
+  companyId    String?
+  company      Company? @relation(fields: [companyId], references: [id])
+  calls        Call[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([companyId, externalId])
+}
+
+model Call {
+  id                   String    @id @default(uuid())
+  sourceCallId         String    @unique
+  clinicId             String
+  clinic               Clinic    @relation(fields: [clinicId], references: [id])
+  agentId              String?
+  agent                Agent?    @relation(fields: [agentId], references: [id])
+  
+  endedReason          String?
+  customerPhoneNumber  String?
+  callStartTime        DateTime
+  durationSeconds      Float?
+  callEndedTime        DateTime?
+  callDate             DateTime?
+  recordingUrl         String?
+  summary              String?
+  
+  vapiScore             String?
+  checkStatus           String?
+  evaluation            String?
+  feedback              String?
+  sentiment             String?
+  protocolAdherence     Int?
+  llmFeedback           String?   
+  outcome               String?
+  callTypeValue         String?
+  callTypeConfidence    Float?
+  callTypeReasoning     String?   
+  sentimentReasoning    String?   
+  sentimentConfidence   Float?
+  protocolReasoning     String?   
+  protocolConfidence    Float?
+  outcomeReasoning      String?   
+  outcomeConfidence     Float?
+  
+  engineerStatus        String?
+  engineerComments      String?
+
+  type                  String?
+  customerName          String?
+  insurance             String?
+  dateOfBirth           DateTime?
+  callReason            String?
+  reviewerName          String?
+  qaCheck               String?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([clinicId])
+  @@index([agentId])
+  @@index([callStartTime])
+}
