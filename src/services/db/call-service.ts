@@ -42,12 +42,18 @@ export class CallService {
         currentRowNumber
       );
       if (callData) {
-        const { sourceCallId: _, clinic: __, ...updateWithoutKey } = callData;
+        // Create update object with all properties except sourceCallId and clinic
+        const updateObj = Object.fromEntries(
+          Object.entries(callData).filter(
+            ([key]) => key !== "sourceCallId" && key !== "clinic"
+          )
+        );
+
         operations.push(
           this.prisma.call.upsert({
             where: { sourceCallId: callData.sourceCallId },
             create: callData,
-            update: updateWithoutKey,
+            update: updateObj,
           })
         );
       } else {
