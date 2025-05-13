@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { Prisma } from "../../../generated/prisma";
+import { Prisma } from "@prisma/client";
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
         break;
       case "pending":
         orderBy = [
-          { checkStatus: "desc" }, 
-          { callStartTime: "desc" }, 
+          { checkStatus: "desc" },
+          { callStartTime: "desc" },
         ] as Prisma.CallOrderByWithRelationInput;
         break;
       case "recent":
@@ -112,7 +112,7 @@ function calculateStartDate(endDate: Date, timeFrame: string): Date {
       startDate.setFullYear(endDate.getFullYear() - 1);
       break;
     default:
-      startDate.setDate(endDate.getDate() - 7); 
+      startDate.setDate(endDate.getDate() - 7);
   }
   return startDate;
 }
