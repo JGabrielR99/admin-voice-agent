@@ -168,6 +168,13 @@ async function getProtocolAdherenceData(
   }));
 }
 
+interface FeedbackItem {
+  sentiment: string | null; // Assuming sentiment can be null from Prisma schema
+  _count: {
+    id: number;
+  };
+}
+
 async function getFeedbackData(
   startDate: Date,
   endDate: Date,
@@ -180,7 +187,7 @@ async function getFeedbackData(
       id: true,
     },
   });
-  return feedbackData.map((item) => ({
+  return feedbackData.map((item: FeedbackItem) => ({
     sentiment: item.sentiment || "unknown",
     count: item._count.id,
   }));
