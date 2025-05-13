@@ -43,7 +43,22 @@ export type Call = {
   needsCheck?: boolean | null;
 };
 
-export function CallsTable({ calls }: { calls: Call[] }) {
+export function CallsTable({
+  calls,
+  loading = false,
+  onPageChange = () => {},
+  pagination = { page: 1, pageSize: 10, totalCount: 0, totalPages: 0 },
+}: {
+  calls: Call[];
+  loading?: boolean;
+  onPageChange?: (page: number) => void;
+  pagination?: {
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  };
+}) {
   const searchParams = useSearchParams();
 
   // Create a function to generate links that preserve current query params
@@ -52,6 +67,19 @@ export function CallsTable({ calls }: { calls: Call[] }) {
     const queryString = currentParams.toString();
     return `/calls/${callId}${queryString ? `?${queryString}` : ""}`;
   };
+
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div
+          className="bg-white rounded-lg border shadow-sm"
+          style={{ borderColor: "#d9dbdb" }}
+        >
+          <div className="text-center py-8">Loading calls...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -223,6 +251,49 @@ export function CallsTable({ calls }: { calls: Call[] }) {
           </table>
         </div>
       </div>
+
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center mt-6">
+          <nav className="flex items-center gap-2">
+            <button
+              onClick={() => onPageChange(Number(pagination.page) - 1)}
+              disabled={Number(pagination.page) === 1}
+              className="px-3 py-1 rounded-md"
+              style={{
+                backgroundColor:
+                  Number(pagination.page) === 1 ? "#e0e0e0" : "#d0f2e7",
+                color: Number(pagination.page) === 1 ? "#666666" : "#333333",
+                fontWeight: "medium",
+              }}
+            >
+              Previous
+            </button>
+
+            <div className="text-sm font-medium text-gray-700">
+              Page {pagination.page} of {pagination.totalPages}
+            </div>
+
+            <button
+              onClick={() => onPageChange(Number(pagination.page) + 1)}
+              disabled={Number(pagination.page) >= pagination.totalPages}
+              className="px-3 py-1 rounded-md"
+              style={{
+                backgroundColor:
+                  Number(pagination.page) >= pagination.totalPages
+                    ? "#e0e0e0"
+                    : "#d0f2e7",
+                color:
+                  Number(pagination.page) >= pagination.totalPages
+                    ? "#666666"
+                    : "#333333",
+                fontWeight: "medium",
+              }}
+            >
+              Next
+            </button>
+          </nav>
+        </div>
+      )}
     </div>
   );
 }

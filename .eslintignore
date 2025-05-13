@@ -1,0 +1,2 @@
+# Ignorar archivos generados automáticamente por Prisma
+src/generated/**/* 

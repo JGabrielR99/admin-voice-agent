@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { CallsTable } from "@/components/calls-table";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -32,7 +32,7 @@ interface Pagination {
   totalPages: number;
 }
 
-export default function CallsPage() {
+function CallsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [calls, setCalls] = useState<Call[]>([]);
@@ -167,162 +167,125 @@ export default function CallsPage() {
   };
 
   return (
-    <DashboardSidebar>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1
-            style={{ color: "#333333" }}
-            className="text-2xl font-bold tracking-tight"
-          >
-            Calls
-          </h1>
+    <div className="max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1
+          style={{ color: "#333333" }}
+          className="text-2xl font-bold tracking-tight"
+        >
+          Calls
+        </h1>
+        <div className="flex gap-2">
           <div className="flex gap-2">
-            <div className="flex gap-2">
-              {/* Clinic filter */}
-              <Select
-                value={clinicId}
-                onValueChange={(value: string) =>
-                  updateFilters("clinicId", value)
-                }
+            {/* Clinic filter */}
+            <Select
+              value={clinicId}
+              onValueChange={(value: string) =>
+                updateFilters("clinicId", value)
+              }
+            >
+              <SelectTrigger
+                className="h-10 w-[180px]"
+                style={{ backgroundColor: "#d0f2e7", color: "#333333" }}
               >
-                <SelectTrigger
-                  className="h-10 w-[180px]"
-                  style={{ backgroundColor: "#d0f2e7", color: "#333333" }}
-                >
-                  <SelectValue placeholder="Select clinic" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All clinics</SelectItem>
-                  {clinics.map((clinic) => (
-                    <SelectItem key={clinic.id} value={clinic.id}>
-                      {clinic.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <SelectValue placeholder="Select clinic" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All clinics</SelectItem>
+                {clinics.map((clinic) => (
+                  <SelectItem key={clinic.id} value={clinic.id}>
+                    {clinic.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-              {/* Agent filter */}
-              <Select
-                value={agentId}
-                onValueChange={(value: string) =>
-                  updateFilters("agentId", value)
-                }
+            {/* Agent filter */}
+            <Select
+              value={agentId}
+              onValueChange={(value: string) => updateFilters("agentId", value)}
+            >
+              <SelectTrigger
+                className="h-10 w-[180px]"
+                style={{ backgroundColor: "#d0f2e7", color: "#333333" }}
               >
-                <SelectTrigger
-                  className="h-10 w-[180px]"
-                  style={{ backgroundColor: "#d0f2e7", color: "#333333" }}
-                >
-                  <SelectValue placeholder="Select agent" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All agents</SelectItem>
-                  {agents.map((agent) => (
-                    <SelectItem key={agent.id} value={agent.id}>
-                      {agent.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <SelectValue placeholder="Select agent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All agents</SelectItem>
+                {agents.map((agent) => (
+                  <SelectItem key={agent.id} value={agent.id}>
+                    {agent.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-              {/* Time frame filter */}
-              <Select
-                value={timeFrame}
-                onValueChange={(value: string) =>
-                  updateFilters("timeFrame", value)
-                }
+            {/* Time frame filter */}
+            <Select
+              value={timeFrame}
+              onValueChange={(value: string) =>
+                updateFilters("timeFrame", value)
+              }
+            >
+              <SelectTrigger
+                className="h-10 w-[180px]"
+                style={{ backgroundColor: "#d0f2e7", color: "#333333" }}
               >
-                <SelectTrigger
-                  className="h-10 w-[180px]"
-                  style={{ backgroundColor: "#d0f2e7", color: "#333333" }}
-                >
-                  <SelectValue placeholder="Time frame" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="day">Last 24 hours</SelectItem>
-                  <SelectItem value="week">Last week</SelectItem>
-                  <SelectItem value="month">Last month</SelectItem>
-                  <SelectItem value="6months">Last 6 months</SelectItem>
-                  <SelectItem value="year">Last year</SelectItem>
-                </SelectContent>
-              </Select>
+                <SelectValue placeholder="Time frame" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="day">Last 24 hours</SelectItem>
+                <SelectItem value="week">Last week</SelectItem>
+                <SelectItem value="month">Last month</SelectItem>
+                <SelectItem value="6months">Last 6 months</SelectItem>
+                <SelectItem value="year">Last year</SelectItem>
+              </SelectContent>
+            </Select>
 
-              {/* Sort by filter */}
-              <Select
-                value={sortBy}
-                onValueChange={(value: string) =>
-                  updateFilters("sortBy", value)
-                }
+            {/* Sort by filter */}
+            <Select
+              value={sortBy}
+              onValueChange={(value: string) => updateFilters("sortBy", value)}
+            >
+              <SelectTrigger
+                className="h-10 w-[180px]"
+                style={{ backgroundColor: "#d0f2e7", color: "#333333" }}
               >
-                <SelectTrigger
-                  className="h-10 w-[180px]"
-                  style={{ backgroundColor: "#ade0db", color: "#333333" }}
-                >
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recent">Most recent</SelectItem>
-                  <SelectItem value="oldest">Oldest first</SelectItem>
-                  <SelectItem value="duration">Longest calls</SelectItem>
-                  <SelectItem value="sentiment_desc">Best sentiment</SelectItem>
-                  <SelectItem value="sentiment_asc">Worst sentiment</SelectItem>
-                  <SelectItem value="pending">Pending first</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Most recent</SelectItem>
+                <SelectItem value="oldest">Oldest</SelectItem>
+                <SelectItem value="duration-asc">
+                  Duration (Ascending)
+                </SelectItem>
+                <SelectItem value="duration-desc">
+                  Duration (Descending)
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-
-        {loading ? (
-          <div className="text-center py-8">Loading calls...</div>
-        ) : (
-          <>
-            <CallsTable calls={calls} />
-
-            {pagination.totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <nav className="flex items-center gap-2">
-                  <button
-                    onClick={() => handlePageChange(Number(page) - 1)}
-                    disabled={Number(page) === 1}
-                    className="px-3 py-1 rounded-md"
-                    style={{
-                      backgroundColor:
-                        Number(page) === 1 ? "#e0e0e0" : "#d0f2e7",
-                      color: Number(page) === 1 ? "#666666" : "#333333",
-                      fontWeight: "medium",
-                    }}
-                  >
-                    Previous
-                  </button>
-
-                  <div className="text-sm font-medium text-gray-700">
-                    Page {page} of {pagination.totalPages}
-                  </div>
-
-                  <button
-                    onClick={() => handlePageChange(Number(page) + 1)}
-                    disabled={Number(page) >= pagination.totalPages}
-                    className="px-3 py-1 rounded-md"
-                    style={{
-                      backgroundColor:
-                        Number(page) >= pagination.totalPages
-                          ? "#e0e0e0"
-                          : "#d0f2e7",
-                      color:
-                        Number(page) >= pagination.totalPages
-                          ? "#666666"
-                          : "#333333",
-                      fontWeight: "medium",
-                    }}
-                  >
-                    Next
-                  </button>
-                </nav>
-              </div>
-            )}
-          </>
-        )}
       </div>
+
+      <CallsTable
+        calls={calls}
+        loading={loading}
+        onPageChange={handlePageChange}
+        pagination={pagination}
+      />
+    </div>
+  );
+}
+
+// Componente principal envuelto en Suspense
+export default function CallsPage() {
+  return (
+    <DashboardSidebar>
+      <Suspense fallback={<div>Loading calls data...</div>}>
+        <CallsPageContent />
+      </Suspense>
     </DashboardSidebar>
   );
 }

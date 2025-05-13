@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { ExcelRowData } from "../../types/import-excel";
 import { EXCEL_IMPORT, importProgressTracker } from "../../utils/constants";
 import { CallService } from "@/services/db/call-service";
-import { sendProgressUpdate } from "@/app/api/calls/import/stream/route";
+import { sendProgressUpdate } from "@/utils/progressStream";
 
 // Create a dedicated prisma client for Excel processing
 const prisma = new PrismaClient();

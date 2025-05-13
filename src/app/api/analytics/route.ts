@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+// Definir una interfaz para la cláusula where
+interface WhereClause {
+  callStartTime: { gte: Date; lte: Date };
+  clinicId?: string;
+  agentId?: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -13,7 +20,7 @@ export async function GET(request: NextRequest) {
     const startDate = calculateStartDate(endDate, timeFrame);
 
     // Build where clause
-    let whereClause: any = {
+    const whereClause: WhereClause = {
       callStartTime: { gte: startDate, lte: endDate },
     };
 
@@ -99,7 +106,7 @@ function calculateStartDate(endDate: Date, timeFrame: string): Date {
 async function getCallVolumeData(
   startDate: Date,
   endDate: Date,
-  whereClause: any
+  whereClause: WhereClause
 ) {
   const callsByDay = await prisma.call.groupBy({
     by: ["callDate"],
@@ -122,7 +129,7 @@ async function getCallVolumeData(
 async function getAvgCallDuration(
   startDate: Date,
   endDate: Date,
-  whereClause: any
+  whereClause: WhereClause
 ) {
   const avgDuration = await prisma.call.groupBy({
     by: ["callDate"],
@@ -145,7 +152,7 @@ async function getAvgCallDuration(
 async function getProtocolAdherenceData(
   startDate: Date,
   endDate: Date,
-  whereClause: any
+  whereClause: WhereClause
 ) {
   const protocolData = await prisma.call.groupBy({
     by: ["callDate"],
@@ -168,7 +175,7 @@ async function getProtocolAdherenceData(
 async function getFeedbackData(
   startDate: Date,
   endDate: Date,
-  whereClause: any
+  whereClause: WhereClause
 ) {
   const feedbackData = await prisma.call.groupBy({
     by: ["sentiment"],
@@ -188,7 +195,7 @@ async function getFeedbackData(
 async function getPeakCallHours(
   startDate: Date,
   endDate: Date,
-  whereClause: any
+  whereClause: WhereClause
 ) {
   const calls = await prisma.call.findMany({
     where: whereClause,
