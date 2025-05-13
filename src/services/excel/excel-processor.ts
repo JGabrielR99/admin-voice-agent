@@ -2,9 +2,9 @@ import * as XLSX from "xlsx";
 import prisma from "@/lib/prisma";
 import { ExcelRowData } from "../../types/import-excel";
 import { EXCEL_IMPORT, importProgressTracker } from "../../utils/constants";
-import { CallService } from "@/services/db/call-service";
+import { processBatch } from "@/services/db/call-service";
 import { sendProgressUpdate } from "@/utils/progressStream";
-const callService = new CallService(prisma);
+
 export class ExcelProcessor {
   static async processExcelFile(buffer: ArrayBuffer): Promise<void> {
     const progress = importProgressTracker.get();
@@ -131,7 +131,7 @@ export class ExcelProcessor {
           setTimeout(resolve, EXCEL_IMPORT.DELAY_BETWEEN_BATCHES)
         );
       }
-      const batchResult = await callService.processBatch(
+      const batchResult = await processBatch(
         batch,
         clinicId,
         progress.jobId,
