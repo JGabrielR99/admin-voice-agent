@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, Call } from "@prisma/client";
+import { Prisma, PrismaClient, Call } from "@/generated/prisma";
 import { ExcelRowData, BatchResult } from "../../types/import-excel";
 import {
   parseDate,
