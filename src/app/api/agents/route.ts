@@ -31,15 +31,8 @@ export async function GET(request: NextRequest) {
       },
     });
     const uniqueAgentsMap = new Map();
-
-    interface AgentFromSelect {
-      id: string; // Assuming id is a string, adjust if it's a number based on your Prisma schema
-      name: string | null; // Corrected to allow null as per linter feedback
-    }
-
-    agents.forEach((agent: AgentFromSelect) => {
+    agents.forEach((agent) => {
       if (agent.name && agent.name.trim() !== "") {
-        // agent.name is guaranteed to be non-null by the Prisma query
         uniqueAgentsMap.set(agent.id, {
           id: agent.id,
           name: agent.name.trim(),

@@ -83,14 +83,6 @@ function calculateStartDate(endDate: Date, timeFrame: string): Date {
   }
   return startDate;
 }
-
-interface CallVolumeDay {
-  callDate: Date | null;
-  _count: {
-    id: number;
-  };
-}
-
 async function getCallVolumeData(
   startDate: Date,
   endDate: Date,
@@ -106,19 +98,11 @@ async function getCallVolumeData(
       callDate: "asc",
     },
   });
-  return callsByDay.map((day: CallVolumeDay) => ({
+  return callsByDay.map((day) => ({
     date: day.callDate,
     calls: day._count.id,
   }));
 }
-
-interface AvgDurationDay {
-  callDate: Date | null;
-  _avg: {
-    durationSeconds: number | null;
-  };
-}
-
 async function getAvgCallDuration(
   startDate: Date,
   endDate: Date,
@@ -134,19 +118,11 @@ async function getAvgCallDuration(
       callDate: "asc",
     },
   });
-  return avgDuration.map((day: AvgDurationDay) => ({
+  return avgDuration.map((day) => ({
     date: day.callDate,
     avgDuration: day._avg.durationSeconds,
   }));
 }
-
-interface ProtocolAdherenceDay {
-  callDate: Date | null;
-  _avg: {
-    protocolAdherence: number | null;
-  };
-}
-
 async function getProtocolAdherenceData(
   startDate: Date,
   endDate: Date,
@@ -162,19 +138,11 @@ async function getProtocolAdherenceData(
       callDate: "asc",
     },
   });
-  return protocolData.map((day: ProtocolAdherenceDay) => ({
+  return protocolData.map((day) => ({
     date: day.callDate,
     protocolAdherence: day._avg.protocolAdherence || 0,
   }));
 }
-
-interface FeedbackItem {
-  sentiment: string | null; // Assuming sentiment can be null from Prisma schema
-  _count: {
-    id: number;
-  };
-}
-
 async function getFeedbackData(
   startDate: Date,
   endDate: Date,
@@ -187,7 +155,7 @@ async function getFeedbackData(
       id: true,
     },
   });
-  return feedbackData.map((item: FeedbackItem) => ({
+  return feedbackData.map((item) => ({
     sentiment: item.sentiment || "unknown",
     count: item._count.id,
   }));
