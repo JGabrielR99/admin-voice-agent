@@ -1,13 +1,10 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { CallDetailCard } from "@/components/calls-table";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
-
-// Definir la interfaz para los datos de la llamada
 interface CallData {
   id: string;
   sourceCallId: string | null;
@@ -37,8 +34,6 @@ interface CallData {
   feedback?: string | null;
   needsCheck?: boolean | null;
 }
-
-// Interfaz para la llamada formateada
 interface FormattedCall extends CallData {
   llmEvaluation: {
     sentiment: string | null;
@@ -51,13 +46,9 @@ interface FormattedCall extends CallData {
     feedback: string | null;
   };
 }
-
-// Helper functions for sentiment display
 function getSentimentLabel(sentiment: string | null): string {
   if (!sentiment) return "Neutral";
-
   const sentimentLower = sentiment.toLowerCase();
-
   if (
     sentimentLower.includes("very negative") ||
     sentimentLower.includes("muy negativo")
@@ -81,20 +72,16 @@ function getSentimentLabel(sentiment: string | null): string {
   ) {
     return "Positive";
   }
-
   return "Neutral";
 }
-
 function getSentimentColor(sentiment: string | null): string {
-  if (!sentiment) return "#e8f8f6"; // Default neutral color
-
+  if (!sentiment) return "#e8f8f6"; 
   const sentimentLower = sentiment.toLowerCase();
-
   if (
     sentimentLower.includes("very negative") ||
     sentimentLower.includes("muy negativo")
   ) {
-    return "#fecaca"; // Darker red
+    return "#fecaca"; 
   } else if (
     sentimentLower.includes("negative") ||
     sentimentLower.includes("negativo")
@@ -106,27 +93,23 @@ function getSentimentColor(sentiment: string | null): string {
     sentimentLower.includes("very positive") ||
     sentimentLower.includes("muy positivo")
   ) {
-    return "#bbf7d0"; // Darker green
+    return "#bbf7d0"; 
   } else if (
     sentimentLower.includes("positive") ||
     sentimentLower.includes("positivo")
   ) {
     return "#dcfce7";
   }
-
-  return "#e8f8f6"; // Default neutral color
+  return "#e8f8f6"; 
 }
-
 function getSentimentTextColor(sentiment: string | null): string {
-  if (!sentiment) return "#0f766e"; // Default neutral text color
-
+  if (!sentiment) return "#0f766e"; 
   const sentimentLower = sentiment.toLowerCase();
-
   if (
     sentimentLower.includes("very negative") ||
     sentimentLower.includes("muy negativo")
   ) {
-    return "#991b1b"; // Darker red text
+    return "#991b1b"; 
   } else if (
     sentimentLower.includes("negative") ||
     sentimentLower.includes("negativo")
@@ -138,17 +121,15 @@ function getSentimentTextColor(sentiment: string | null): string {
     sentimentLower.includes("very positive") ||
     sentimentLower.includes("muy positivo")
   ) {
-    return "#166534"; // Darker green text
+    return "#166534"; 
   } else if (
     sentimentLower.includes("positive") ||
     sentimentLower.includes("positivo")
   ) {
     return "#15803d";
   }
-
-  return "#0f766e"; // Default neutral text color
+  return "#0f766e"; 
 }
-
 export default function CallDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -156,34 +137,26 @@ export default function CallDetailPage() {
   const [call, setCall] = useState<CallData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Construct back link with original filters
   const getBackLink = () => {
     const backParams = new URLSearchParams();
-
-    // Preserve all filter parameters
     const page = searchParams.get("page");
     const clinicId = searchParams.get("clinicId");
     const agentId = searchParams.get("agentId");
     const timeFrame = searchParams.get("timeFrame");
     const sortBy = searchParams.get("sortBy");
-
     if (page) backParams.set("page", page);
     if (clinicId) backParams.set("clinicId", clinicId);
     if (agentId) backParams.set("agentId", agentId);
     if (timeFrame) backParams.set("timeFrame", timeFrame);
     if (sortBy) backParams.set("sortBy", sortBy);
-
     const queryString = backParams.toString();
     return `/calls${queryString ? `?${queryString}` : ""}`;
   };
-
   useEffect(() => {
     async function fetchCallDetails() {
       try {
         setLoading(true);
         const response = await fetch(`/api/calls/${id}`);
-
         if (response.ok) {
           const data = await response.json();
           setCall(data);
@@ -198,12 +171,10 @@ export default function CallDetailPage() {
         setLoading(false);
       }
     }
-
     if (id) {
       fetchCallDetails();
     }
   }, [id]);
-
   if (loading) {
     return (
       <DashboardSidebar>
@@ -213,7 +184,6 @@ export default function CallDetailPage() {
       </DashboardSidebar>
     );
   }
-
   if (error) {
     return (
       <DashboardSidebar>
@@ -238,7 +208,6 @@ export default function CallDetailPage() {
       </DashboardSidebar>
     );
   }
-
   if (!call) {
     return (
       <DashboardSidebar>
@@ -263,8 +232,6 @@ export default function CallDetailPage() {
       </DashboardSidebar>
     );
   }
-
-  // Format llmEvaluation and humanEvaluation for compatibility
   const formattedCall: FormattedCall = {
     ...call,
     llmEvaluation: {
@@ -278,7 +245,6 @@ export default function CallDetailPage() {
       feedback: call.feedback || null,
     },
   };
-
   return (
     <DashboardSidebar>
       <div className="max-w-7xl mx-auto">
@@ -298,9 +264,7 @@ export default function CallDetailPage() {
             Call Details
           </h1>
         </div>
-
         <CallDetailCard call={formattedCall} />
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div
             className="bg-white rounded-lg border shadow-sm p-5"
@@ -337,7 +301,6 @@ export default function CallDetailPage() {
                     </div>
                   </div>
                 </div>
-
                 <div className="mb-4">
                   <div
                     className="text-sm font-medium mb-1"
@@ -376,7 +339,6 @@ export default function CallDetailPage() {
                     </span>
                   </div>
                 </div>
-
                 <div className="mb-4">
                   <div
                     className="text-sm font-medium mb-1"
@@ -388,7 +350,6 @@ export default function CallDetailPage() {
                     {formattedCall.llmEvaluation.callTypeValue || "-"}
                   </div>
                 </div>
-
                 <div>
                   <div
                     className="text-sm font-medium mb-1"
@@ -414,7 +375,6 @@ export default function CallDetailPage() {
                       : "Unsuccessful"}
                   </div>
                 </div>
-
                 {formattedCall.sentimentReasoning && (
                   <div className="mt-4">
                     <div
@@ -429,17 +389,14 @@ export default function CallDetailPage() {
                     >
                       {(() => {
                         try {
-                          // Parse the JSON string
                           const sentimentData = JSON.parse(
                             formattedCall.sentimentReasoning || "{}"
                           );
-                          // Extract just the explanation field
                           return (
                             sentimentData.explanation ||
                             formattedCall.sentimentReasoning
                           );
                         } catch {
-                          // If parsing fails, return the original string
                           return formattedCall.sentimentReasoning;
                         }
                       })()}
@@ -453,7 +410,6 @@ export default function CallDetailPage() {
               </div>
             )}
           </div>
-
           <div
             className="bg-white rounded-lg border shadow-sm p-5"
             style={{ borderColor: "#d9dbdb" }}
@@ -464,7 +420,6 @@ export default function CallDetailPage() {
             >
               QA Review
             </h2>
-
             {formattedCall.engineerStatus ? (
               <>
                 <div className="mb-4">
@@ -492,7 +447,6 @@ export default function CallDetailPage() {
                       : "Failed"}
                   </div>
                 </div>
-
                 {formattedCall.engineerComments && (
                   <div className="mb-4">
                     <div

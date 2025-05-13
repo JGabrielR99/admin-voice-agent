@@ -1,11 +1,8 @@
 "use client";
-
 import { Phone, Calendar, Clock, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useSearchParams } from "next/navigation";
-
-// Define types based on the Prisma schema
 export type Call = {
   id: string;
   sourceCallId: string | null;
@@ -28,7 +25,6 @@ export type Call = {
   clinic?: {
     name: string | null;
   } | null;
-  // Fields that might be in the formatted call data
   callTypeValue?: string | null;
   protocolAdherence?: number | null;
   outcome?: string | null;
@@ -42,7 +38,6 @@ export type Call = {
   feedback?: string | null;
   needsCheck?: boolean | null;
 };
-
 export function CallsTable({
   calls,
   loading = false,
@@ -60,14 +55,11 @@ export function CallsTable({
   };
 }) {
   const searchParams = useSearchParams();
-
-  // Create a function to generate links that preserve current query params
   const getDetailLink = (callId: string) => {
     const currentParams = new URLSearchParams(searchParams.toString());
     const queryString = currentParams.toString();
     return `/calls/${callId}${queryString ? `?${queryString}` : ""}`;
   };
-
   if (loading) {
     return (
       <div className="w-full">
@@ -80,7 +72,6 @@ export function CallsTable({
       </div>
     );
   }
-
   return (
     <div className="w-full">
       <div
@@ -251,7 +242,6 @@ export function CallsTable({
           </table>
         </div>
       </div>
-
       {pagination.totalPages > 1 && (
         <div className="flex justify-center mt-6">
           <nav className="flex items-center gap-2">
@@ -268,11 +258,9 @@ export function CallsTable({
             >
               Previous
             </button>
-
             <div className="text-sm font-medium text-gray-700">
               Page {pagination.page} of {pagination.totalPages}
             </div>
-
             <button
               onClick={() => onPageChange(Number(pagination.page) + 1)}
               disabled={Number(pagination.page) >= pagination.totalPages}
@@ -297,19 +285,15 @@ export function CallsTable({
     </div>
   );
 }
-
 function StatusBadge({ call }: { call: Call }) {
   let status = "Pendiente";
   let bgColor = "#fcf3dc";
   let textColor = "#8f5f00";
-
-  // First check for human evaluation if available
   if (call.vapiScore) {
     const score = parseFloat(call.vapiScore);
-
     if (score < 1.5) {
       status = "Very negative";
-      bgColor = "#fecaca"; // Darker red
+      bgColor = "#fecaca"; 
       textColor = "#991b1b";
     } else if (score < 2.5) {
       status = "Negative";
@@ -325,20 +309,18 @@ function StatusBadge({ call }: { call: Call }) {
       textColor = "#15803d";
     } else {
       status = "Very positive";
-      bgColor = "#bbf7d0"; // Darker green
+      bgColor = "#bbf7d0"; 
       textColor = "#166534";
     }
   }
-  // Then check LLM sentiment evaluation
   else if (call.sentiment) {
     const sentiment = call.sentiment.toLowerCase();
-
     if (
       sentiment.includes("very negative") ||
       sentiment.includes("muy negativo")
     ) {
       status = "Muy negativo";
-      bgColor = "#fecaca"; // Darker red
+      bgColor = "#fecaca"; 
       textColor = "#991b1b";
     } else if (
       sentiment.includes("negative") ||
@@ -363,11 +345,10 @@ function StatusBadge({ call }: { call: Call }) {
       sentiment.includes("muy positivo")
     ) {
       status = "Muy positivo";
-      bgColor = "#bbf7d0"; // Darker green
+      bgColor = "#bbf7d0"; 
       textColor = "#166534";
     }
   }
-  // Finally, fallback to engineer status or needsCheck
   else if (call.engineerStatus === "Pass") {
     status = "Positivo";
     bgColor = "#dcfce7";
@@ -378,10 +359,9 @@ function StatusBadge({ call }: { call: Call }) {
     textColor = "#b42318";
   } else if (call.checkStatus === "pending") {
     status = "Pendiente";
-    bgColor = "#f59e0b"; // Color ámbar más oscuro para mejorar contraste
-    textColor = "#ffffff"; // Texto blanco para mayor contraste
+    bgColor = "#f59e0b"; 
+    textColor = "#ffffff"; 
   }
-
   return (
     <div
       className="inline-flex items-center py-1 px-2.5 rounded-md text-xs font-medium"
@@ -391,7 +371,6 @@ function StatusBadge({ call }: { call: Call }) {
     </div>
   );
 }
-
 export function CallDetailCard({ call }: { call: Call }) {
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return "-";
@@ -399,7 +378,6 @@ export function CallDetailCard({ call }: { call: Call }) {
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
-
   return (
     <div
       className="bg-white rounded-lg border shadow-sm p-5"
@@ -408,7 +386,6 @@ export function CallDetailCard({ call }: { call: Call }) {
       <h2 className="text-lg font-semibold mb-4" style={{ color: "#333333" }}>
         Call Summary
       </h2>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <div className="mb-4">
@@ -422,7 +399,6 @@ export function CallDetailCard({ call }: { call: Call }) {
               {call.sourceCallId || "-"}
             </div>
           </div>
-
           <div className="mb-4">
             <div
               className="text-sm font-medium mb-1"
@@ -434,7 +410,6 @@ export function CallDetailCard({ call }: { call: Call }) {
               {call.agent?.name || "-"}
             </div>
           </div>
-
           <div className="mb-4">
             <div
               className="text-sm font-medium mb-1"
@@ -446,7 +421,6 @@ export function CallDetailCard({ call }: { call: Call }) {
               {call.customerPhoneNumber || "-"}
             </div>
           </div>
-
           <div className="mb-4">
             <div
               className="text-sm font-medium mb-1"
@@ -459,7 +433,6 @@ export function CallDetailCard({ call }: { call: Call }) {
             </div>
           </div>
         </div>
-
         <div>
           <div className="mb-4">
             <div
@@ -472,7 +445,6 @@ export function CallDetailCard({ call }: { call: Call }) {
               {formatDuration(call.durationSeconds)}
             </div>
           </div>
-
           <div className="mb-4">
             <div
               className="text-sm font-medium mb-1"
@@ -484,7 +456,6 @@ export function CallDetailCard({ call }: { call: Call }) {
               {call.endedReason || "-"}
             </div>
           </div>
-
           <div className="mb-4">
             <div
               className="text-sm font-medium mb-1"
@@ -496,7 +467,6 @@ export function CallDetailCard({ call }: { call: Call }) {
               {call.callTypeValue || call.llmEvaluation?.callTypeValue || "-"}
             </div>
           </div>
-
           <div className="mb-4">
             <div
               className="text-sm font-medium mb-1"
@@ -517,7 +487,6 @@ export function CallDetailCard({ call }: { call: Call }) {
           </div>
         </div>
       </div>
-
       {(call.engineerStatus || call.engineerComments) && (
         <div className="mt-2">
           <div
@@ -552,7 +521,6 @@ export function CallDetailCard({ call }: { call: Call }) {
           </div>
         </div>
       )}
-
       {call.summary && (
         <div className="mt-2">
           <div
@@ -569,7 +537,6 @@ export function CallDetailCard({ call }: { call: Call }) {
           </div>
         </div>
       )}
-
       {call.recordingUrl && (
         <div className="mt-4">
           <div

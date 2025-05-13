@@ -1,40 +1,32 @@
 import React, { useState, useRef } from "react";
 import { ImportProgress } from "./ImportProgress";
 import { useImportProgress } from "@/hooks/useImportProgress";
-
 export function ExcelImporter() {
   const { progress } = useImportProgress();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fileInputRef.current?.files?.length) {
       setUploadError("Por favor seleccione un archivo Excel (.xlsx o .xls)");
       return;
     }
-
     const file = fileInputRef.current.files[0];
     if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
       setUploadError("El archivo debe ser un documento Excel (.xlsx o .xls)");
       return;
     }
-
     setIsUploading(true);
     setUploadError(null);
-
     try {
       const formData = new FormData();
       formData.append("file", file);
-
       const response = await fetch("/api/calls/import", {
         method: "POST",
         body: formData,
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         if (response.status === 409) {
           setUploadError("Ya hay una importación en progreso");
@@ -42,8 +34,6 @@ export function ExcelImporter() {
           setUploadError(data.error || "Error al importar el archivo");
         }
       }
-
-      // Reset file input on success
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -54,15 +44,12 @@ export function ExcelImporter() {
       setIsUploading(false);
     }
   };
-
   return (
     <div className="p-6 bg-white rounded-lg shadow">
       <h3 className="text-xl font-semibold mb-4">Importar datos desde Excel</h3>
-
-      {/* Mostrar componente de progreso si hay una importación activa */}
+      {}
       <ImportProgress />
-
-      {/* Mostrar formulario solo si no hay una importación en progreso */}
+      {}
       {!progress.inProgress && (
         <form onSubmit={handleUpload}>
           <div className="mb-4">
@@ -84,13 +71,11 @@ export function ExcelImporter() {
               Formatos aceptados: .xlsx, .xls
             </p>
           </div>
-
           {uploadError && (
             <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded text-red-600">
               {uploadError}
             </div>
           )}
-
           <button
             type="submit"
             disabled={isUploading}

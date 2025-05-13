@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import {
   Phone,
@@ -12,12 +11,9 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Call } from "./calls-table";
-
-// Define the QA Review component props
 interface QAReviewDashboardProps {
   initialCall?: Call | null;
 }
-
 export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
   const [calls, setCalls] = useState<Call[]>(initialCall ? [initialCall] : []);
   const [currentCallIndex, setCurrentCallIndex] = useState(0);
@@ -30,8 +26,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
     null
   );
-
-  // Status and comments for the current call
   const [engineerStatus, setEngineerStatus] = useState<string | null>(
     initialCall?.engineerStatus || null
   );
@@ -43,14 +37,10 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
     text: string;
     type: "success" | "error";
   } | null>(null);
-
-  // Initialize audio element
   useEffect(() => {
     if (typeof window !== "undefined") {
       const audio = new Audio();
       setAudioElement(audio);
-
-      // Clean up when component unmounts
       return () => {
         if (audio) {
           audio.pause();
@@ -59,27 +49,20 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
       };
     }
   }, []);
-
-  // Fetch calls that need QA review on initial load
   useEffect(() => {
-    // Skip fetching if we have an initial call
     if (initialCall && page === 1) return;
-
     const fetchCalls = async () => {
       try {
         setLoading(true);
         const response = await fetch(
           `/api/calls/qa-review?page=${page}&pageSize=${pageSize}`
         );
-
         if (!response.ok) {
           throw new Error("Failed to fetch calls");
         }
-
         const data = await response.json();
         setCalls(data.data);
         setTotalPages(data.pagination.totalPages);
-
         if (data.data.length > 0) {
           const firstCall = data.data[0];
           setEngineerStatus(firstCall.engineerStatus || null);
@@ -92,17 +75,11 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
         setLoading(false);
       }
     };
-
     fetchCalls();
   }, [page, pageSize, initialCall]);
-
-  // Get current call
   const currentCall = calls[currentCallIndex] || null;
-
-  // Function to toggle audio play/pause
   const toggleAudio = () => {
     if (!audioElement || !currentCall?.recordingUrl) return;
-
     if (audioPlaying) {
       audioElement.pause();
     } else {
@@ -111,77 +88,52 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
         console.error("Error playing audio:", error);
       });
     }
-
     setAudioPlaying(!audioPlaying);
   };
-
-  // Handle audio ended event
   useEffect(() => {
     if (!audioElement) return;
-
     const handleEnded = () => setAudioPlaying(false);
     audioElement.addEventListener("ended", handleEnded);
-
     return () => {
       audioElement.removeEventListener("ended", handleEnded);
     };
   }, [audioElement]);
-
-  // Navigate to previous call
   const goToPrevCall = () => {
     if (currentCallIndex > 0) {
-      // Pause audio if playing
       if (audioElement && audioPlaying) {
         audioElement.pause();
         setAudioPlaying(false);
       }
-
       setCurrentCallIndex(currentCallIndex - 1);
-
-      // Reset form for the new call
       const prevCall = calls[currentCallIndex - 1];
       setEngineerStatus(prevCall.engineerStatus || null);
       setEngineerComments(prevCall.engineerComments || "");
       setSaveMessage(null);
     } else if (page > 1) {
-      // Load previous page
       setPage(page - 1);
-      // The currentCallIndex will be set to the last item once the new page loads
       setCurrentCallIndex(pageSize - 1);
     }
   };
-
-  // Navigate to next call
   const goToNextCall = () => {
     if (currentCallIndex < calls.length - 1) {
-      // Pause audio if playing
       if (audioElement && audioPlaying) {
         audioElement.pause();
         setAudioPlaying(false);
       }
-
       setCurrentCallIndex(currentCallIndex + 1);
-
-      // Reset form for the new call
       const nextCall = calls[currentCallIndex + 1];
       setEngineerStatus(nextCall.engineerStatus || null);
       setEngineerComments(nextCall.engineerComments || "");
       setSaveMessage(null);
     } else if (page < totalPages) {
-      // Load next page
       setPage(page + 1);
-      // The currentCallIndex will be reset to 0 once the new page loads
       setCurrentCallIndex(0);
     }
   };
-
-  // Save QA review
   const saveQAReview = async () => {
     if (!currentCall) return;
-
     try {
       setSaving(true);
-
       const response = await fetch(`/api/calls/${currentCall.id}`, {
         method: "PATCH",
         headers: {
@@ -192,12 +144,9 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
           engineerComments,
         }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to save review");
       }
-
-      // Update the call in the local state
       const updatedCalls = [...calls];
       updatedCalls[currentCallIndex] = {
         ...currentCall,
@@ -205,10 +154,7 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
         engineerComments,
       };
       setCalls(updatedCalls);
-
       setSaveMessage({ text: "Review saved successfully", type: "success" });
-
-      // Immediately go to next call after saving
       goToNextCall();
     } catch (error) {
       console.error("Error saving QA review:", error);
@@ -217,7 +163,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
       setSaving(false);
     }
   };
-
   if (loading) {
     return (
       <div className="w-full py-10">
@@ -225,7 +170,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="w-full">
@@ -238,7 +182,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
       </div>
     );
   }
-
   if (!currentCall) {
     return (
       <div className="w-full">
@@ -251,22 +194,19 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
       </div>
     );
   }
-
-  // Functions to format data for display
   const formatTime = (seconds: number | null) => {
     if (!seconds) return "-";
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
-
   return (
     <div className="w-full">
       <div
         className="bg-white rounded-lg border shadow-sm"
         style={{ borderColor: "#d9dbdb" }}
       >
-        {/* Navigation and progress indicator */}
+        {}
         <div
           className="flex justify-between items-center border-b p-4"
           style={{ borderColor: "#d9dbdb" }}
@@ -284,12 +224,10 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
             <ArrowLeft size={16} className="mr-1" />
             Previous
           </button>
-
           <div className="text-sm" style={{ color: "#555555" }}>
             Call {currentCallIndex + 1} of {calls.length} on page {page} of{" "}
             {totalPages}
           </div>
-
           <button
             onClick={goToNextCall}
             disabled={
@@ -309,8 +247,7 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
             <ArrowRight size={16} className="ml-1" />
           </button>
         </div>
-
-        {/* Call information */}
+        {}
         <div className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -320,7 +257,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
               >
                 Call Information
               </h2>
-
               <div className="space-y-4">
                 <div>
                   <div
@@ -333,7 +269,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                     {currentCall.sourceCallId?.slice(0, 8) || "-"}
                   </div>
                 </div>
-
                 <div>
                   <div
                     className="text-sm font-medium mb-1"
@@ -345,7 +280,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                     {currentCall.agent?.name || "-"}
                   </div>
                 </div>
-
                 <div>
                   <div
                     className="text-sm font-medium mb-1"
@@ -361,7 +295,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                     {currentCall.customerPhoneNumber || "-"}
                   </div>
                 </div>
-
                 <div>
                   <div
                     className="text-sm font-medium mb-1"
@@ -380,7 +313,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                     )}
                   </div>
                 </div>
-
                 <div>
                   <div
                     className="text-sm font-medium mb-1"
@@ -398,7 +330,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                 </div>
               </div>
             </div>
-
             <div>
               <h2
                 className="text-lg font-semibold mb-4"
@@ -406,7 +337,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
               >
                 AI Evaluation
               </h2>
-
               <div className="space-y-4">
                 <div>
                   <div
@@ -419,7 +349,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                     {currentCall.sentiment || "-"}
                   </div>
                 </div>
-
                 <div>
                   <div
                     className="text-sm font-medium mb-1"
@@ -431,7 +360,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                     {currentCall.callTypeValue || "-"}
                   </div>
                 </div>
-
                 <div>
                   <div
                     className="text-sm font-medium mb-1"
@@ -445,7 +373,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                       : "-"}
                   </div>
                 </div>
-
                 <div>
                   <div
                     className="text-sm font-medium mb-1"
@@ -460,8 +387,7 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
               </div>
             </div>
           </div>
-
-          {/* Audio player and summary */}
+          {}
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h2
@@ -470,7 +396,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
               >
                 Call Recording
               </h2>
-
               {currentCall.recordingUrl ? (
                 <div
                   className="p-4 rounded-md"
@@ -488,7 +413,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                         <Play size={18} style={{ color: "#333333" }} />
                       )}
                     </button>
-
                     <div className="text-sm" style={{ color: "#555555" }}>
                       Duration: {formatTime(currentCall.durationSeconds)}
                     </div>
@@ -500,7 +424,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                 </div>
               )}
             </div>
-
             <div>
               <h2
                 className="text-lg font-semibold mb-4"
@@ -508,7 +431,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
               >
                 Call Summary
               </h2>
-
               <div
                 className="p-4 rounded-md"
                 style={{ backgroundColor: "#f8fafa", color: "#333333" }}
@@ -517,8 +439,7 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
               </div>
             </div>
           </div>
-
-          {/* QA Review form */}
+          {}
           <div className="mt-6">
             <h2
               className="text-lg font-semibold mb-4"
@@ -526,7 +447,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
             >
               QA Review
             </h2>
-
             <div className="space-y-4">
               <div>
                 <div
@@ -566,7 +486,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                   </button>
                 </div>
               </div>
-
               <div>
                 <div
                   className="text-sm font-medium mb-2"
@@ -587,7 +506,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                   placeholder="Add your comments here..."
                 />
               </div>
-
               <div className="flex items-center justify-between">
                 <div>
                   {saveMessage && (
@@ -608,7 +526,6 @@ export function QAReviewDashboard({ initialCall }: QAReviewDashboardProps) {
                     </div>
                   )}
                 </div>
-
                 <button
                   onClick={saveQAReview}
                   disabled={saving || !engineerStatus}

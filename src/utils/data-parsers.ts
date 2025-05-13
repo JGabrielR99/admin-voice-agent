@@ -1,12 +1,4 @@
 import { importProgressTracker } from "./constants";
-
-/**
- * Parse a date value from various formats
- * @param value The date value to parse
- * @param fieldName Name of the field being parsed (for logging)
- * @param callId Optional call ID for context in logs
- * @returns Parsed Date or null if invalid
- */
 export function parseDate(
   value: string | Date | number | undefined | null,
   fieldName: string,
@@ -15,20 +7,16 @@ export function parseDate(
   if (value === null || value === undefined || String(value).trim() === "")
     return null;
   if (value instanceof Date && !isNaN(value.getTime())) return value;
-
   let date: Date | null = null;
   const valStr = String(value);
-
   if (valStr.includes("T") && valStr.endsWith("Z")) {
     const parsed = new Date(valStr);
     if (!isNaN(parsed.getTime())) date = parsed;
   }
-
   if (!date) {
     const parsed = new Date(valStr);
     if (!isNaN(parsed.getTime())) date = parsed;
   }
-
   if (!date && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(valStr)) {
     const parts = valStr.split("/");
     const parsed = new Date(
@@ -38,7 +26,6 @@ export function parseDate(
     );
     if (!isNaN(parsed.getTime())) date = parsed;
   }
-
   if (!date && typeof value === "number" && value > 0 && value < 2958466) {
     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
     const jsTimestamp =
@@ -47,7 +34,6 @@ export function parseDate(
     const parsed = new Date(jsTimestamp);
     if (!isNaN(parsed.getTime())) date = parsed;
   }
-
   if (!date) {
     const progress = importProgressTracker.get();
     console.warn(
@@ -58,10 +44,6 @@ export function parseDate(
   }
   return date;
 }
-
-/**
- * Parse a value as a float or return null if invalid
- */
 export function parseFloatOrNull(
   value: string | number | undefined | null
 ): number | null {
@@ -70,10 +52,6 @@ export function parseFloatOrNull(
   const num = parseFloat(String(value));
   return isNaN(num) ? null : num;
 }
-
-/**
- * Parse a value as an integer or return null if invalid
- */
 export function parseIntOrNull(
   value: string | number | undefined | null
 ): number | null {
@@ -82,20 +60,11 @@ export function parseIntOrNull(
   const num = parseInt(String(value), 10);
   return isNaN(num) ? null : num;
 }
-
-/**
- * Get a string value from an unknown value or return null
- */
 export function getStringOrNull(value: unknown): string | null {
   return value !== undefined && value !== null && String(value).trim() !== ""
     ? String(value)
     : null;
 }
-
-/**
- * Extract the first 10 characters of a call ID for display,
- * or return 'MISSING' if no ID is present
- */
 export function getCallIdDisplay(callId: string | undefined | null): string {
   return callId ? String(callId).trim().substring(0, 10) : "MISSING";
 }

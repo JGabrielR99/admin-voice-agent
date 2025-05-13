@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -10,19 +9,15 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-
 export function DashboardSidebar({ children }: { children?: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
-
   const isActive = (path: string): boolean => {
     return pathname === path || (pathname === "/" && path === "/analytics");
   };
-
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
-
   return (
     <div
       className="flex min-h-screen h-screen"
@@ -170,7 +165,6 @@ export function DashboardSidebar({ children }: { children?: React.ReactNode }) {
           <GripVertical size={14} color="#555" />
         </div>
       </div>
-
       <div
         style={{ backgroundColor: "#ffffff" }}
         className="flex-1 overflow-hidden"

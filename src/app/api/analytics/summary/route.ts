@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const clinicId = searchParams.get("clinicId");
     const agentId = searchParams.get("agentId");
     const timeFrame = searchParams.get("timeFrame") || "week";
-
-    // Calculate the date range based on timeFrame
     const endDate = new Date();
     const startDate = calculateStartDate(endDate, timeFrame);
-
-    // Prepare where clause based on filters
     const whereClause: {
       callStartTime: { gte: Date; lte: Date };
       clinicId?: string;
@@ -20,22 +15,16 @@ export async function GET(request: NextRequest) {
     } = {
       callStartTime: { gte: startDate, lte: endDate },
     };
-
     if (clinicId) {
       whereClause.clinicId = clinicId;
     }
-
     if (agentId) {
       whereClause.agentId = agentId;
     }
-
     try {
-      // Get total calls
       const totalCalls = await prisma.call.count({
         where: whereClause,
       });
-
-      // Get average duration
       const durationData = await prisma.call.aggregate({
         where: whereClause,
         _avg: {
@@ -43,8 +32,6 @@ export async function GET(request: NextRequest) {
         },
       });
       const avgDuration = durationData._avg.durationSeconds || 0;
-
-      // Get protocol adherence average
       const protocolData = await prisma.call.aggregate({
         where: whereClause,
         _avg: {
@@ -52,19 +39,14 @@ export async function GET(request: NextRequest) {
         },
       });
       const avgProtocolAdherence = protocolData._avg.protocolAdherence || 0;
-
-      // Get calls that need review
       const needsReviewCount = await prisma.call.count({
         where: {
           ...whereClause,
           checkStatus: "PENDING",
         },
       });
-
-      // Get previous period data for comparison
       const previousPeriodStart = new Date(startDate);
       const previousPeriodEnd = new Date(startDate);
-
       switch (timeFrame) {
         case "day":
           previousPeriodStart.setDate(previousPeriodStart.getDate() - 1);
@@ -84,37 +66,29 @@ export async function GET(request: NextRequest) {
           );
           break;
       }
-
       const previousWhereClause = {
         ...whereClause,
         callStartTime: { gte: previousPeriodStart, lte: previousPeriodEnd },
       };
-
-      // Get previous period metrics
       const prevTotalCalls = await prisma.call.count({
         where: previousWhereClause,
       });
-
       const prevNeedsReviewCount = await prisma.call.count({
         where: {
           ...previousWhereClause,
           checkStatus: "PENDING",
         },
       });
-
-      // Calculate percent changes
       const reviewChange =
         prevTotalCalls > 0
           ? (needsReviewCount / totalCalls -
               prevNeedsReviewCount / prevTotalCalls) *
             100
           : 0;
-
       const callsChange =
         prevTotalCalls > 0
           ? ((totalCalls - prevTotalCalls) / prevTotalCalls) * 100
           : 0;
-
       return NextResponse.json({
         totalCalls,
         avgDuration,
@@ -149,11 +123,8 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-// Helper function to calculate start date based on time frame
 function calculateStartDate(endDate: Date, timeFrame: string): Date {
   const startDate = new Date(endDate);
-
   switch (timeFrame) {
     case "day":
       startDate.setDate(endDate.getDate() - 1);
@@ -171,8 +142,7 @@ function calculateStartDate(endDate: Date, timeFrame: string): Date {
       startDate.setFullYear(endDate.getFullYear() - 1);
       break;
     default:
-      startDate.setDate(endDate.getDate() - 7); // Default to week
+      startDate.setDate(endDate.getDate() - 7); 
   }
-
   return startDate;
 }

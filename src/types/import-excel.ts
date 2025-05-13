@@ -28,7 +28,6 @@ export interface ExcelRowData {
   outcome_confidence?: string | number;
   status_feedback_engineer?: string;
   comments_engineer?: string;
-
   customer_phone_number?: string;
   type?: string;
   customer_name?: string;
@@ -41,10 +40,8 @@ export interface ExcelRowData {
   "Feedback QA"?: string;
   "Status Feedback Engineer"?: string;
   "Comments Engineer"?: string;
-
   [key: string]: unknown;
 }
-
 export interface ImportProgress {
   inProgress: boolean;
   jobId: string | null;
@@ -59,7 +56,6 @@ export interface ImportProgress {
   fileName?: string;
   currentSheet?: string;
 }
-
 export interface BatchResult {
   successfulRows: number;
   failedRows: number;

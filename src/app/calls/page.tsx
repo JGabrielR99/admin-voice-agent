@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, Suspense } from "react";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { CallsTable } from "@/components/calls-table";
@@ -12,26 +11,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Call } from "@/components/calls-table";
-
-// Definir interfaces para los datos
 interface Clinic {
   id: string;
   name: string;
   companyId?: string;
 }
-
 interface Agent {
   id: string;
   name: string;
 }
-
 interface Pagination {
   page: number;
   pageSize: number;
   totalCount: number;
   totalPages: number;
 }
-
 function CallsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -45,20 +39,15 @@ function CallsPageContent() {
     totalCount: 0,
     totalPages: 0,
   });
-
-  // Get filter values from URL params
   const page = searchParams.get("page") || "1";
   const clinicId = searchParams.get("clinicId") || "all";
   const agentId = searchParams.get("agentId") || "all";
   const timeFrame = searchParams.get("timeFrame") || "day";
   const sortBy = searchParams.get("sortBy") || "recent";
-
-  // Fetch clinics for filter dropdown
   useEffect(() => {
     async function fetchClinics() {
       try {
         const response = await fetch(`/api/clinics`);
-
         if (response.ok) {
           const data = await response.json();
           setClinics(data);
@@ -69,11 +58,8 @@ function CallsPageContent() {
         console.error("Error fetching clinics:", error);
       }
     }
-
     fetchClinics();
   }, []);
-
-  // Fetch agents for filter dropdown
   useEffect(() => {
     async function fetchAgents() {
       try {
@@ -81,28 +67,19 @@ function CallsPageContent() {
         if (clinicId && clinicId !== "all") {
           url += `?clinicId=${clinicId}`;
         }
-
         const response = await fetch(url);
-
         if (response.ok) {
           const data = (await response.json()) as Agent[];
-
-          // Create a map to deduplicate by ID and filter out agents without names
           const agentsMap = new Map();
           data.forEach((agent) => {
             if (agent.name && agent.name.trim() !== "") {
               agentsMap.set(agent.id, agent);
             }
           });
-
-          // Convert back to array and sort
           const uniqueAgents = Array.from(agentsMap.values());
-
-          // Sort agents by name
           uniqueAgents.sort((a, b) =>
             (a.name || "").localeCompare(b.name || "")
           );
-
           setAgents(uniqueAgents);
         } else {
           console.error("Failed to fetch agents");
@@ -111,22 +88,16 @@ function CallsPageContent() {
         console.error("Error fetching agents:", error);
       }
     }
-
     fetchAgents();
   }, [clinicId]);
-
-  // Fetch calls with filters
   useEffect(() => {
     async function fetchCalls() {
       try {
         setLoading(true);
-
         let url = `/api/calls?page=${page}&pageSize=10&timeFrame=${timeFrame}&sortBy=${sortBy}`;
         if (clinicId && clinicId !== "all") url += `&clinicId=${clinicId}`;
         if (agentId && agentId !== "all") url += `&agentId=${agentId}`;
-
         const response = await fetch(url);
-
         if (response.ok) {
           const data = await response.json();
           setCalls(data.data);
@@ -140,11 +111,8 @@ function CallsPageContent() {
         setLoading(false);
       }
     }
-
     fetchCalls();
   }, [page, clinicId, agentId, timeFrame, sortBy]);
-
-  // Update URL with filters
   const updateFilters = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value && value !== "all") {
@@ -152,20 +120,14 @@ function CallsPageContent() {
     } else {
       params.delete(key);
     }
-
-    // Reset page to 1 when changing filters
     if (key !== "page") {
       params.set("page", "1");
     }
-
-    // Usar replace en lugar de push para evitar la página en blanco
     router.replace(`/calls?${params.toString()}`, { scroll: false });
   };
-
   const handlePageChange = (newPage: number) => {
     updateFilters("page", newPage.toString());
   };
-
   return (
     <div className="max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -177,7 +139,7 @@ function CallsPageContent() {
         </h1>
         <div className="flex gap-2">
           <div className="flex gap-2">
-            {/* Clinic filter */}
+            {}
             <Select
               value={clinicId}
               onValueChange={(value: string) =>
@@ -199,8 +161,7 @@ function CallsPageContent() {
                 ))}
               </SelectContent>
             </Select>
-
-            {/* Agent filter */}
+            {}
             <Select
               value={agentId}
               onValueChange={(value: string) => updateFilters("agentId", value)}
@@ -220,8 +181,7 @@ function CallsPageContent() {
                 ))}
               </SelectContent>
             </Select>
-
-            {/* Time frame filter */}
+            {}
             <Select
               value={timeFrame}
               onValueChange={(value: string) =>
@@ -242,8 +202,7 @@ function CallsPageContent() {
                 <SelectItem value="year">Last year</SelectItem>
               </SelectContent>
             </Select>
-
-            {/* Sort by filter */}
+            {}
             <Select
               value={sortBy}
               onValueChange={(value: string) => updateFilters("sortBy", value)}
@@ -268,7 +227,6 @@ function CallsPageContent() {
           </div>
         </div>
       </div>
-
       <CallsTable
         calls={calls}
         loading={loading}
@@ -278,8 +236,6 @@ function CallsPageContent() {
     </div>
   );
 }
-
-// Componente principal envuelto en Suspense
 export default function CallsPage() {
   return (
     <DashboardSidebar>

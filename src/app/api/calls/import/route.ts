@@ -2,13 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { ExcelProcessor } from "@/services/excel/excel-processor";
 import { importProgressTracker } from "@/utils/constants";
 import { sendProgressUpdate } from "@/utils/progressStream";
-
-/**
- * POST handler for Excel file imports
- */
 export async function POST(request: NextRequest) {
   const currentProgress = importProgressTracker.get();
-
   if (currentProgress.inProgress) {
     return NextResponse.json(
       {
@@ -19,25 +14,18 @@ export async function POST(request: NextRequest) {
       { status: 409 }
     );
   }
-
   try {
-    // Parse form data and get the file
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-
-    // Validate file
     if (!file) {
       return NextResponse.json({ error: "No file provided." }, { status: 400 });
     }
-
     if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
       return NextResponse.json(
         { error: "File must be an Excel document (.xlsx or .xls)." },
         { status: 400 }
       );
     }
-
-    // Setup progress tracking
     importProgressTracker.reset();
     const jobId = importProgressTracker.generateJobId();
     importProgressTracker.set({
@@ -47,14 +35,8 @@ export async function POST(request: NextRequest) {
       status: "processing",
       fileName: file.name,
     });
-
-    // Notificar a los clientes sobre el inicio de la importación
     sendProgressUpdate();
-
-    // Read file as array buffer
     const buffer = await file.arrayBuffer();
-
-    // Start processing in the background without awaiting
     ExcelProcessor.processExcelFile(buffer).catch((error) => {
       console.error("Background processing error:", error);
       importProgressTracker.set({
@@ -68,8 +50,6 @@ export async function POST(request: NextRequest) {
       });
       sendProgressUpdate();
     });
-
-    // Immediately return response that processing has started
     return NextResponse.json({
       success: true,
       jobId,
@@ -86,7 +66,6 @@ export async function POST(request: NextRequest) {
       inProgress: false,
     });
     sendProgressUpdate();
-
     return NextResponse.json(
       {
         error:
@@ -98,10 +77,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-/**
- * GET handler to check the status of an import
- */
 export async function GET() {
   return NextResponse.json(importProgressTracker.get());
 }

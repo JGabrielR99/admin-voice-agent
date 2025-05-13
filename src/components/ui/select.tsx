@@ -1,5 +1,4 @@
 "use client";
-
 import { forwardRef } from "react";
 import {
   Root,
@@ -19,13 +18,10 @@ import {
   Group,
 } from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
-
 import { cn } from "@/lib/utils";
-
 const Select = Root;
 const SelectGroup = Group;
 const SelectValue = Value;
-
 const SelectTrigger = forwardRef<
   React.ElementRef<typeof Trigger>,
   React.ComponentPropsWithoutRef<typeof Trigger>
@@ -45,7 +41,6 @@ const SelectTrigger = forwardRef<
   </Trigger>
 ));
 SelectTrigger.displayName = "SelectTrigger";
-
 const SelectScrollUp = forwardRef<
   React.ElementRef<typeof SelectScrollUpButton>,
   React.ComponentPropsWithoutRef<typeof SelectScrollUpButton>
@@ -62,7 +57,6 @@ const SelectScrollUp = forwardRef<
   </SelectScrollUpButton>
 ));
 SelectScrollUp.displayName = "SelectScrollUp";
-
 const SelectScrollDown = forwardRef<
   React.ElementRef<typeof SelectScrollDownButton>,
   React.ComponentPropsWithoutRef<typeof SelectScrollDownButton>
@@ -79,7 +73,6 @@ const SelectScrollDown = forwardRef<
   </SelectScrollDownButton>
 ));
 SelectScrollDown.displayName = "SelectScrollDown";
-
 const SelectContent = forwardRef<
   React.ElementRef<typeof Content>,
   React.ComponentPropsWithoutRef<typeof Content>
@@ -111,7 +104,6 @@ const SelectContent = forwardRef<
   </Portal>
 ));
 SelectContent.displayName = "SelectContent";
-
 const SelectLabel = forwardRef<
   React.ElementRef<typeof Label>,
   React.ComponentPropsWithoutRef<typeof Label>
@@ -123,7 +115,6 @@ const SelectLabel = forwardRef<
   />
 ));
 SelectLabel.displayName = "SelectLabel";
-
 const SelectItem = forwardRef<
   React.ElementRef<typeof Item>,
   React.ComponentPropsWithoutRef<typeof Item>
@@ -145,7 +136,6 @@ const SelectItem = forwardRef<
   </Item>
 ));
 SelectItem.displayName = "SelectItem";
-
 const SelectSeparator = forwardRef<
   React.ElementRef<typeof Separator>,
   React.ComponentPropsWithoutRef<typeof Separator>
@@ -157,7 +147,6 @@ const SelectSeparator = forwardRef<
   />
 ));
 SelectSeparator.displayName = "SelectSeparator";
-
 export {
   Select,
   SelectGroup,

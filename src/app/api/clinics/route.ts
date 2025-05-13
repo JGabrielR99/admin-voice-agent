@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-
 export async function GET() {
   try {
     const clinics = await prisma.clinic.findMany({
@@ -18,7 +17,6 @@ export async function GET() {
         name: "asc",
       },
     });
-
     return NextResponse.json(clinics);
   } catch (error) {
     console.error("Error fetching clinics:", error);

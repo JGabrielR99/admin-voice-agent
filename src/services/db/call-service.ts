@@ -8,13 +8,8 @@ import {
   getCallIdDisplay,
 } from "../../utils/data-parsers";
 import { importProgressTracker } from "../../utils/constants";
-
 export class CallService {
   constructor(private prisma: PrismaClient) {}
-
-  /**
-   * Process a batch of Excel rows and create/update Call records
-   */
   async processBatch(
     rows: ExcelRowData[],
     clinicId: string,
@@ -24,11 +19,9 @@ export class CallService {
     const result: BatchResult = { successfulRows: 0, failedRows: 0 };
     const operations: Prisma.PrismaPromise<Call>[] = [];
     const rowsInBatch = rows.length;
-
     console.log(
       `[Job ${jobId}] Clinic: ${clinicName} - Preparing batch of ${rowsInBatch} rows for transaction.`
     );
-
     for (const row of rows) {
       importProgressTracker.set({
         processedRows: importProgressTracker.get().processedRows + 1,
@@ -36,13 +29,11 @@ export class CallService {
       const currentRowNumber = importProgressTracker.get().processedRows;
       const sourceCallId = String(row.call_id || "").trim();
       const callIdDisplay = getCallIdDisplay(sourceCallId);
-
       console.log(
         `[Job ${jobId}] Clinic: ${clinicName} - Row ${currentRowNumber}/${
           importProgressTracker.get().totalRows
         } (ID: ${callIdDisplay})... preparing for batch.`
       );
-
       const callData = await this.prepareCallData(
         row,
         clinicId,
@@ -50,9 +41,7 @@ export class CallService {
         clinicName,
         currentRowNumber
       );
-
       if (callData) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { sourceCallId: _, clinic: __, ...updateWithoutKey } = callData;
         operations.push(
           this.prisma.call.upsert({
@@ -65,7 +54,6 @@ export class CallService {
         result.failedRows++;
       }
     }
-
     if (operations.length > 0) {
       console.log(
         `[Job ${jobId}] Clinic: ${clinicName} - Attempting to upsert ${operations.length} calls in a transaction...`
@@ -89,13 +77,8 @@ export class CallService {
         `[Job ${jobId}] Clinic: ${clinicName} - No valid operations to run in transaction for this batch (all rows may have failed preparation).`
       );
     }
-
     return result;
   }
-
-  /**
-   * Prepare call data from a single Excel row
-   */
   private async prepareCallData(
     row: ExcelRowData,
     clinicId: string,
@@ -106,31 +89,24 @@ export class CallService {
     const sourceCallId = String(row.call_id || "").trim();
     const callIdDisplay = getCallIdDisplay(sourceCallId);
     const totalRows = importProgressTracker.get().totalRows;
-
     if (!sourceCallId) {
       console.warn(
         `[Job ${jobId}] Clinic: ${clinicName} - Row ${currentRowNumber}/${totalRows} (ID: ${callIdDisplay}): SKIPPED (missing call_id).`
       );
       return null;
     }
-
     try {
       let agentId: string | null = null;
       if (row.assistant) {
         const externalAgentId = String(row.assistant).trim();
         if (externalAgentId) {
-          // Look up agent by externalId first
           let agent = await this.prisma.agent.findFirst({
             where: { externalId: externalAgentId },
           });
-
-          // If not found by externalId, try to find by name (for backward compatibility)
           if (!agent) {
             agent = await this.prisma.agent.findFirst({
               where: { name: externalAgentId },
             });
-
-            // If found by name but no externalId, update it with the externalId
             if (agent && !agent.externalId) {
               agent = await this.prisma.agent.update({
                 where: { id: agent.id },
@@ -138,8 +114,6 @@ export class CallService {
               });
             }
           }
-
-          // If still not found, create a new agent with both name and externalId
           if (!agent) {
             agent = await this.prisma.agent.create({
               data: {
@@ -152,20 +126,17 @@ export class CallService {
           agentId = agent.id;
         }
       }
-
       const callStartTime = parseDate(
         row.call_start_time,
         "call_start_time",
         sourceCallId
       );
-
       if (!callStartTime) {
         console.warn(
           `[Job ${jobId}] Clinic: ${clinicName} - Row ${currentRowNumber}/${totalRows} (ID: ${callIdDisplay}): SKIPPED (invalid call_start_time).`
         );
         return null;
       }
-
       const vapiScoreRaw =
         row.vapi_score !== undefined ? row.vapi_score : row["FALSE"];
       const customerPhoneNumber =
@@ -175,7 +146,6 @@ export class CallService {
         row.status_feedback_engineer || row["Status Feedback Engineer"] || null;
       const engineerComments =
         row.comments_engineer || row["Comments Engineer"] || null;
-
       const createData: Prisma.CallCreateInput = {
         sourceCallId: sourceCallId,
         clinic: { connect: { id: clinicId } },

@@ -1,8 +1,6 @@
 "use client";
-
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { QAReviewDashboard } from "@/components/qa-review-dashboard";
-
 export default function QAReviewPage() {
   return (
     <DashboardSidebar>
@@ -15,7 +13,6 @@ export default function QAReviewPage() {
             QA Review
           </h1>
         </div>
-
         <QAReviewDashboard />
       </div>
     </DashboardSidebar>

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import {
   BarChart2,
@@ -32,39 +31,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 interface Clinic {
   id: string;
   name: string;
 }
-
 interface CallVolumeData {
   date: string;
   calls: number;
 }
-
 interface DurationData {
   date: string;
   avgDuration: number;
 }
-
 interface ProtocolAdherenceData {
   date: string;
   protocolAdherence: number;
 }
-
 interface SentimentData {
   sentiment: string;
   count: number;
   percentage: number;
 }
-
 interface HourData {
   hour: number;
   count: number;
   date: string;
 }
-
 interface SummaryData {
   totalCalls: number;
   avgDuration: number;
@@ -75,8 +67,6 @@ interface SummaryData {
     needsReview: number;
   };
 }
-
-// Summary cards data structure
 interface SummaryCardProps {
   icon: React.ReactNode;
   title: string;
@@ -87,7 +77,6 @@ interface SummaryCardProps {
   change?: number;
   isPositiveGood?: boolean;
 }
-
 export function AnalyticsDashboard() {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [selectedClinic, setSelectedClinic] = useState<string>("all");
@@ -113,32 +102,24 @@ export function AnalyticsDashboard() {
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Modal state
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
-
-  // Colors for charts with better contrast
   const SENTIMENT_COLORS = {
-    very_positive: "#059669", // Dark green
-    positive: "#10b981", // Medium green
-    neutral: "#2563eb", // Blue
-    negative: "#ef4444", // Medium red
-    very_negative: "#b91c1c", // Dark red
-    unknown: "#6b7280", // Darker gray
+    very_positive: "#059669", 
+    positive: "#10b981", 
+    neutral: "#2563eb", 
+    negative: "#ef4444", 
+    very_negative: "#b91c1c", 
+    unknown: "#6b7280", 
   };
-
-  // Chart colors
   const CHART_COLORS = {
-    bar: "#0284c7", // Darker blue for bar charts
-    line: "#0891b2", // Teal for line charts
-    protocol: "#0e7490", // Dark teal for protocol adherence
-    dot: "#0c4a6e", // Very dark blue for dots
-    hover: "#f59e0b", // Amber for hover effect - high contrast
-    text: "#1e293b", // Dark slate for text
-    axis: "#475569", // Slate for axis
+    bar: "#0284c7", 
+    line: "#0891b2", 
+    protocol: "#0e7490", 
+    dot: "#0c4a6e", 
+    hover: "#f59e0b", 
+    text: "#1e293b", 
+    axis: "#475569", 
   };
-
-  // Custom tooltip style for all charts
   const tooltipStyle = {
     backgroundColor: "#ffffff",
     borderColor: "#94a3b8",
@@ -150,15 +131,11 @@ export function AnalyticsDashboard() {
     fontSize: "12px",
     fontWeight: 600,
   };
-
-  // Custom tooltip item style
   const tooltipItemStyle = {
     color: "#1e293b",
     fontWeight: 600,
     padding: "3px 0",
   };
-
-  // Fetch clinics on component mount
   useEffect(() => {
     async function fetchClinics() {
       try {
@@ -166,8 +143,6 @@ export function AnalyticsDashboard() {
         if (!response.ok) throw new Error("Failed to fetch clinics");
         const data = await response.json();
         setClinics(data);
-
-        // Set the first clinic as default if available
         if (data.length > 0) {
           setSelectedClinic(data[0].id);
         }
@@ -175,44 +150,29 @@ export function AnalyticsDashboard() {
         console.error("Error fetching clinics:", error);
       }
     }
-
     fetchClinics();
   }, []);
-
-  // Fetch agents when selected clinic changes
   useEffect(() => {
     async function fetchAgents() {
       try {
-        // Build query params for agents
         const params = new URLSearchParams();
         if (selectedClinic && selectedClinic !== "all")
           params.append("clinicId", selectedClinic);
-
         const response = await fetch(`/api/agents?${params}`);
         if (!response.ok) throw new Error("Failed to fetch agents");
-
         const data = await response.json();
-
-        // Create a map to deduplicate by ID and filter out agents without names
         const agentsMap = new Map();
         data.forEach((agent: { id: string; name: string | null }) => {
           if (agent.name && agent.name.trim() !== "") {
             agentsMap.set(agent.id, agent);
           }
         });
-
-        // Convert back to array and sort
         const uniqueAgents = Array.from(agentsMap.values()) as {
           id: string;
           name: string;
         }[];
-
-        // Sort agents by name
         uniqueAgents.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-
         setAgents(uniqueAgents);
-
-        // Set "all" as default
         setSelectedAgent("all");
       } catch (error) {
         console.error("Error fetching agents:", error);
@@ -220,40 +180,29 @@ export function AnalyticsDashboard() {
         setSelectedAgent("all");
       }
     }
-
     fetchAgents();
   }, [selectedClinic]);
-
-  // Fetch analytics data when filters change
   useEffect(() => {
     setIsLoading(true);
     setError(null);
-
     async function fetchAnalyticsData() {
       try {
-        // Build query params
         const params = new URLSearchParams();
         if (selectedClinic && selectedClinic !== "all")
           params.append("clinicId", selectedClinic);
         if (selectedAgent && selectedAgent !== "all")
           params.append("agentId", selectedAgent);
         params.append("timeFrame", timeFrame);
-
-        // Fetch the main analytics data
         const analyticsResponse = await fetch(`/api/analytics?${params}`);
         if (!analyticsResponse.ok) {
           const errorData = await analyticsResponse.json();
           throw new Error(errorData.error || "Failed to fetch analytics");
         }
         const analyticsData = await analyticsResponse.json();
-
-        // Update state with data
         setCallVolumeData(analyticsData.callVolumeData || []);
         setAvgDurationData(analyticsData.avgCallDuration || []);
         setPeakHoursData(analyticsData.peakCallHours || []);
         setProtocolAdherenceData(analyticsData.protocolAdherenceData || []);
-
-        // Fetch sentiment data
         const sentimentResponse = await fetch(
           `/api/analytics/sentiment?${params}`
         );
@@ -262,8 +211,6 @@ export function AnalyticsDashboard() {
           throw new Error(errorData.error || "Failed to fetch sentiment data");
         }
         const sentimentData = await sentimentResponse.json();
-
-        // Add default data if empty
         if (
           sentimentData.length === 0 ||
           sentimentData.every((item: SentimentData) => item.count === 0)
@@ -278,8 +225,6 @@ export function AnalyticsDashboard() {
         } else {
           setSentimentData(sentimentData);
         }
-
-        // Fetch summary data
         const summaryResponse = await fetch(`/api/analytics/summary?${params}`);
         if (!summaryResponse.ok) {
           const errorData = await summaryResponse.json();
@@ -298,30 +243,21 @@ export function AnalyticsDashboard() {
         setIsLoading(false);
       }
     }
-
     fetchAnalyticsData();
   }, [selectedClinic, selectedAgent, timeFrame]);
-
-  // Helper function to format time from seconds to MM:SS
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.round(seconds % 60);
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
-
-  // Helper function to format date
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     return format(date, "MMM dd");
   };
-
-  // Helper function to format hour
   const formatHour = (hour: number) => {
     return `${hour % 12 || 12}${hour < 12 ? "am" : "pm"}`;
   };
-
-  // Custom loading spinner component
   const LoadingSpinner = () => (
     <div className="h-full flex flex-col items-center justify-center">
       <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-t-2 border-blue-500 mb-3"></div>
@@ -329,13 +265,11 @@ export function AnalyticsDashboard() {
       <div className="text-gray-400 text-xs mt-2">This may take a moment</div>
     </div>
   );
-
-  // Custom no data component
   const NoDataDisplay = () => (
     <div className="h-full flex flex-col items-center justify-center">
       <div className="text-gray-400 mb-2">
         <svg
-          xmlns="http://www.w3.org/2000/svg"
+          xmlns="http:
           className="h-12 w-12"
           fill="none"
           viewBox="0 0 24 24"
@@ -355,13 +289,11 @@ export function AnalyticsDashboard() {
       </p>
     </div>
   );
-
-  // Error display component
   const ErrorDisplay = ({ message }: { message: string }) => (
     <div className="h-full flex flex-col items-center justify-center">
       <div className="text-red-500 mb-2">
         <svg
-          xmlns="http://www.w3.org/2000/svg"
+          xmlns="http:
           className="h-12 w-12"
           fill="none"
           viewBox="0 0 24 24"
@@ -379,8 +311,6 @@ export function AnalyticsDashboard() {
       <p className="text-gray-500 text-sm mt-1">{message}</p>
     </div>
   );
-
-  // Format sentiment label for display
   const formatSentimentLabel = (sentiment: string): string => {
     switch (sentiment) {
       case "very_positive":
@@ -391,17 +321,13 @@ export function AnalyticsDashboard() {
         return sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
     }
   };
-
-  // Format change percentage with icon
   const formatChange = (
     change: number | undefined,
     isPositiveGood: boolean = true
   ) => {
     if (change === undefined) return null;
-
     const isPositive = change >= 0;
     const isGood = isPositiveGood ? isPositive : !isPositive;
-
     return (
       <div
         className={`flex items-center text-xs ${
@@ -441,8 +367,6 @@ export function AnalyticsDashboard() {
       </div>
     );
   };
-
-  // Create summary card component
   const SummaryCard = ({
     icon,
     title,
@@ -478,18 +402,12 @@ export function AnalyticsDashboard() {
       </div>
     </div>
   );
-
-  // Chart expand handler
   const handleExpandChart = (chartId: string) => {
     setExpandedChart(chartId);
   };
-
-  // Close modal handler
   const handleCloseModal = () => {
     setExpandedChart(null);
   };
-
-  // Chart Modal Component
   const ChartModal = ({
     children,
     title,
@@ -498,7 +416,6 @@ export function AnalyticsDashboard() {
     title: string;
   }) => {
     if (!expandedChart) return null;
-
     return (
       <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -506,7 +423,7 @@ export function AnalyticsDashboard() {
       >
         <div
           className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
-          onClick={(e) => e.stopPropagation()} // Prevent clicks inside modal from closing it
+          onClick={(e) => e.stopPropagation()} 
         >
           <div className="flex justify-between items-center p-4 border-b">
             <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
@@ -522,8 +439,6 @@ export function AnalyticsDashboard() {
       </div>
     );
   };
-
-  // Expand Button Component
   const ExpandButton = ({ chartId }: { chartId: string }) => (
     <button
       onClick={() => handleExpandChart(chartId)}
@@ -533,7 +448,6 @@ export function AnalyticsDashboard() {
       <Maximize2 className="h-5 w-5 text-gray-500" />
     </button>
   );
-
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
       <section className="mb-8">
@@ -544,8 +458,7 @@ export function AnalyticsDashboard() {
           View key performance metrics and trends
         </p>
       </section>
-
-      {/* Filters */}
+      {}
       <section className="mb-8">
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-5">
           <h2 className="text-lg font-semibold mb-4 text-gray-800">Filters</h2>
@@ -574,7 +487,6 @@ export function AnalyticsDashboard() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="flex-1 min-w-[180px]">
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Agent
@@ -599,7 +511,6 @@ export function AnalyticsDashboard() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="flex-1 min-w-[180px]">
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Time Period
@@ -626,17 +537,15 @@ export function AnalyticsDashboard() {
           </div>
         </div>
       </section>
-
-      {/* Error message if any */}
+      {}
       {error && (
         <div className="mb-8">
           <ErrorDisplay message={error} />
         </div>
       )}
-
-      {/* Summary Cards */}
+      {}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Total Calls Card */}
+        {}
         <SummaryCard
           icon={<Phone size={18} className="text-blue-700" />}
           title="Total Calls"
@@ -646,8 +555,7 @@ export function AnalyticsDashboard() {
           tooltip="Total number of calls in the selected time period"
           change={summaryData.changes?.calls}
         />
-
-        {/* Popular Call Time Card */}
+        {}
         <SummaryCard
           icon={<Clock size={18} className="text-purple-700" />}
           title="Most Active Time"
@@ -666,8 +574,7 @@ export function AnalyticsDashboard() {
           textColor="text-gray-800"
           tooltip="The hour of day with the highest call volume"
         />
-
-        {/* Sentiment Ratio Card */}
+        {}
         <SummaryCard
           icon={<MessageCircle size={18} className="text-green-700" />}
           title="Positive Sentiment"
@@ -695,8 +602,7 @@ export function AnalyticsDashboard() {
           textColor="text-gray-800"
           tooltip="Percentage of calls with positive or very positive sentiment"
         />
-
-        {/* Needs Review Card */}
+        {}
         <SummaryCard
           icon={<Info size={18} className="text-red-700" />}
           title="Needs Review"
@@ -707,13 +613,12 @@ export function AnalyticsDashboard() {
           textColor="text-gray-800"
           tooltip="Number of calls that have been flagged for manual review"
           change={summaryData.changes?.needsReview}
-          isPositiveGood={false} // For this metric, positive change is bad
+          isPositiveGood={false} 
         />
       </section>
-
-      {/* Charts Grid */}
+      {}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-        {/* Call Volume Chart */}
+        {}
         <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm relative">
           <ExpandButton chartId="call-volume" />
           <div className="flex items-center mb-4">
@@ -768,8 +673,7 @@ export function AnalyticsDashboard() {
             )}
           </div>
         </div>
-
-        {/* Average Duration Chart */}
+        {}
         <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm relative">
           <ExpandButton chartId="avg-duration" />
           <div className="flex items-center mb-4">
@@ -832,8 +736,7 @@ export function AnalyticsDashboard() {
             )}
           </div>
         </div>
-
-        {/* Sentiment Distribution Chart */}
+        {}
         <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm relative">
           <ExpandButton chartId="sentiment" />
           <div className="flex items-center mb-4">
@@ -924,8 +827,7 @@ export function AnalyticsDashboard() {
             )}
           </div>
         </div>
-
-        {/* Peak Hours Chart - Modified tooltip */}
+        {}
         <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm relative">
           <ExpandButton chartId="peak-hours" />
           <div className="flex items-center mb-4">
@@ -987,8 +889,7 @@ export function AnalyticsDashboard() {
             )}
           </div>
         </div>
-
-        {/* Protocol Adherence Trend */}
+        {}
         <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm relative">
           <ExpandButton chartId="protocol-adherence" />
           <div className="flex items-center mb-4">
@@ -1056,8 +957,7 @@ export function AnalyticsDashboard() {
           </div>
         </div>
       </section>
-
-      {/* Modal for Expanded Charts */}
+      {}
       {expandedChart === "call-volume" && (
         <ChartModal title="Daily Call Volume">
           <div className="h-[500px]">
@@ -1111,7 +1011,6 @@ export function AnalyticsDashboard() {
           </div>
         </ChartModal>
       )}
-
       {expandedChart === "avg-duration" && (
         <ChartModal title="Average Call Duration">
           <div className="h-[500px]">
@@ -1182,7 +1081,6 @@ export function AnalyticsDashboard() {
           </div>
         </ChartModal>
       )}
-
       {expandedChart === "sentiment" && (
         <ChartModal title="Customer Sentiment">
           <div className="h-[500px]">
@@ -1276,7 +1174,6 @@ export function AnalyticsDashboard() {
                       ["negative", "very_negative"].includes(item.sentiment)
                     )
                     .reduce((sum, item) => sum + item.count, 0);
-
                   return negative === 0
                     ? `${positive}:0`
                     : `${(positive / negative).toFixed(2)}:1`;
@@ -1286,7 +1183,6 @@ export function AnalyticsDashboard() {
           </div>
         </ChartModal>
       )}
-
       {expandedChart === "peak-hours" && (
         <ChartModal title="Peak Call Hours">
           <div className="h-[500px]">
@@ -1352,7 +1248,6 @@ export function AnalyticsDashboard() {
           </div>
         </ChartModal>
       )}
-
       {expandedChart === "protocol-adherence" && (
         <ChartModal title="Protocol Adherence Trend">
           <div className="h-[500px]">
@@ -1437,11 +1332,9 @@ export function AnalyticsDashboard() {
     </div>
   );
 }
-
-// Missing Phone, Info components from the imports
 const Phone = ({ size = 24, ...props }) => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
+    xmlns="http:
     width={size}
     height={size}
     viewBox="0 0 24 24"
@@ -1455,10 +1348,9 @@ const Phone = ({ size = 24, ...props }) => (
     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
   </svg>
 );
-
 const Info = ({ size = 24, ...props }) => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
+    xmlns="http:
     width={size}
     height={size}
     viewBox="0 0 24 24"

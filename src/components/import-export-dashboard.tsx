@@ -1,11 +1,8 @@
 "use client";
-
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Loader2, UploadCloud, AlertCircle } from "lucide-react";
-
 type UploadStatus = "idle" | "uploading" | "success" | "error";
-
 interface ImportProgress {
   inProgress: boolean;
   jobId: string | null;
@@ -20,7 +17,6 @@ interface ImportProgress {
   fileName?: string;
   currentSheet?: string;
 }
-
 export function ImportExportDashboard() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
@@ -29,38 +25,27 @@ export function ImportExportDashboard() {
   const [importProgress, setImportProgress] = useState<ImportProgress | null>(
     null
   );
-
-  // Use SSE for real-time updates
   useEffect(() => {
-    // First load the initial state
     const fetchInitialState = async () => {
       try {
         const response = await fetch("/api/calls/import");
         if (!response.ok) {
           throw new Error("Failed to fetch initial status");
         }
-
         const initialData = await response.json();
         setImportProgress(initialData);
       } catch (error) {
         console.error("Error fetching initial import state:", error);
       }
     };
-
     fetchInitialState();
-
-    // Set up EventSource for real-time updates
     let eventSource: EventSource | null = null;
-
     try {
       eventSource = new EventSource("/api/calls/import/stream");
-
       eventSource.onmessage = (event) => {
         try {
           const progress = JSON.parse(event.data);
           setImportProgress(progress);
-
-          // Update the state based on progress
           if (progress.status === "completed") {
             setUploadStatus("success");
             setSuccessMessage(
@@ -76,21 +61,16 @@ export function ImportExportDashboard() {
             setUploadStatus("error");
             setErrorMessage(progress.error || "Error during import");
           } else if (!progress.inProgress && uploadStatus === "uploading") {
-            // Handle case where backend reset but we still think we're uploading
             setUploadStatus("idle");
           }
         } catch (e) {
           console.error("Error processing SSE message:", e);
         }
       };
-
       eventSource.onerror = () => {
         console.error("SSE error");
-        // Try to reconnect after an error
         if (eventSource) {
           eventSource.close();
-
-          // Try to reconnect after 3 seconds
           setTimeout(() => {
             try {
               eventSource = new EventSource("/api/calls/import/stream");
@@ -103,28 +83,21 @@ export function ImportExportDashboard() {
     } catch (err) {
       console.error("Error setting up SSE:", err);
     }
-
-    // Clean up when component unmounts
     return () => {
       if (eventSource && eventSource.readyState !== 2) {
         eventSource.close();
       }
     };
   }, [uploadStatus]);
-
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      // Don't allow new uploads if one is in progress
       if (importProgress?.inProgress) {
         setErrorMessage(
           "An import is already in progress. Please wait for it to complete."
         );
         return;
       }
-
       if (!acceptedFiles.length) return;
-
-      // Filter only Excel files
       const excelFiles = acceptedFiles.filter(
         (file) =>
           file.type ===
@@ -133,46 +106,33 @@ export function ImportExportDashboard() {
           file.name.endsWith(".xlsx") ||
           file.name.endsWith(".xls")
       );
-
       if (!excelFiles.length) {
         setErrorMessage("Please upload Excel files (.xlsx or .xls)");
         return;
       }
-
       setFiles(excelFiles);
       setUploadStatus("uploading");
       setErrorMessage(null);
       setSuccessMessage(null);
-
       try {
-        // Create FormData to send files
         const formData = new FormData();
         excelFiles.forEach((file) => {
           formData.append("file", file);
         });
-
-        // Send to backend API endpoint
         const response = await fetch("/api/calls/import", {
           method: "POST",
           body: formData,
         });
-
         if (!response.ok) {
           const errorData = await response.json();
-
-          // Handle case where an import is already in progress
           if (response.status === 409 && errorData.inProgress) {
             setImportProgress(errorData.progress);
             throw new Error(
               "An import is already in progress. Please wait for it to complete."
             );
           }
-
           throw new Error(errorData.error || "Error processing the file");
         }
-
-        // Just show the message that the process has started
-        // we don't need to store the jobId because we use SSE
         await response.json();
       } catch (error) {
         setUploadStatus("error");
@@ -183,7 +143,6 @@ export function ImportExportDashboard() {
     },
     [importProgress?.inProgress]
   );
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -196,25 +155,20 @@ export function ImportExportDashboard() {
     multiple: false,
     disabled: uploadStatus === "uploading",
   });
-
-  // Calculate progress percentage
   const progressPercentage = importProgress?.totalRows
     ? Math.round(
         (importProgress.processedRows / importProgress.totalRows) * 100
       )
     : 0;
-
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold mb-6" style={{ color: "#333333" }}>
         Import
       </h2>
-
       <div className="mb-8">
         <h3 className="text-lg font-medium mb-4" style={{ color: "#333333" }}>
           Import Data
         </h3>
-
         {importProgress?.inProgress ? (
           <div className="mb-6 border border-teal-200 rounded-lg p-6 bg-teal-50">
             <div className="flex items-center justify-between mb-2">
@@ -246,7 +200,6 @@ export function ImportExportDashboard() {
                 <span>Processing clinic: {importProgress.currentSheet}</span>
               </div>
             )}
-
             <div className="mt-4 p-3 bg-amber-50 border-amber-200 border rounded-md text-amber-700">
               <div className="flex items-center">
                 <AlertCircle className="mr-2 h-4 w-4 flex-shrink-0" />
@@ -282,7 +235,6 @@ export function ImportExportDashboard() {
               {...getInputProps()}
               disabled={uploadStatus === "uploading"}
             />
-
             <div className="flex flex-col items-center justify-center space-y-4">
               {uploadStatus === "uploading" ? (
                 <>
@@ -306,19 +258,16 @@ export function ImportExportDashboard() {
                 </>
               )}
             </div>
-
             {errorMessage && (
               <div className="mt-4 p-2 bg-red-100 text-red-700 rounded">
                 {errorMessage}
               </div>
             )}
-
             {successMessage && (
               <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
                 {successMessage}
               </div>
             )}
-
             {files.length > 0 && uploadStatus !== "uploading" && (
               <div className="mt-4">
                 <p className="font-medium" style={{ color: "#333333" }}>
