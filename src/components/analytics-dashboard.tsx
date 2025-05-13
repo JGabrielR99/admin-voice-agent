@@ -104,21 +104,21 @@ export function AnalyticsDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
   const SENTIMENT_COLORS = {
-    very_positive: "#059669", 
-    positive: "#10b981", 
-    neutral: "#2563eb", 
-    negative: "#ef4444", 
-    very_negative: "#b91c1c", 
-    unknown: "#6b7280", 
+    very_positive: "#059669",
+    positive: "#10b981",
+    neutral: "#2563eb",
+    negative: "#ef4444",
+    very_negative: "#b91c1c",
+    unknown: "#6b7280",
   };
   const CHART_COLORS = {
-    bar: "#0284c7", 
-    line: "#0891b2", 
-    protocol: "#0e7490", 
-    dot: "#0c4a6e", 
-    hover: "#f59e0b", 
-    text: "#1e293b", 
-    axis: "#475569", 
+    bar: "#0284c7",
+    line: "#0891b2",
+    protocol: "#0e7490",
+    dot: "#0c4a6e",
+    hover: "#f59e0b",
+    text: "#1e293b",
+    axis: "#475569",
   };
   const tooltipStyle = {
     backgroundColor: "#ffffff",
@@ -269,7 +269,7 @@ export function AnalyticsDashboard() {
     <div className="h-full flex flex-col items-center justify-center">
       <div className="text-gray-400 mb-2">
         <svg
-          xmlns="http:
+          xmlns="http://www.w3.org/2000/svg"
           className="h-12 w-12"
           fill="none"
           viewBox="0 0 24 24"
@@ -293,7 +293,7 @@ export function AnalyticsDashboard() {
     <div className="h-full flex flex-col items-center justify-center">
       <div className="text-red-500 mb-2">
         <svg
-          xmlns="http:
+          xmlns="http://www.w3.org/2000/svg"
           className="h-12 w-12"
           fill="none"
           viewBox="0 0 24 24"
@@ -423,7 +423,7 @@ export function AnalyticsDashboard() {
       >
         <div
           className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
-          onClick={(e) => e.stopPropagation()} 
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-between items-center p-4 border-b">
             <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
@@ -613,7 +613,7 @@ export function AnalyticsDashboard() {
           textColor="text-gray-800"
           tooltip="Number of calls that have been flagged for manual review"
           change={summaryData.changes?.needsReview}
-          isPositiveGood={false} 
+          isPositiveGood={false}
         />
       </section>
       {}
@@ -1334,7 +1334,7 @@ export function AnalyticsDashboard() {
 }
 const Phone = ({ size = 24, ...props }) => (
   <svg
-    xmlns="http:
+    xmlns="http://www.w3.org/2000/svg"
     width={size}
     height={size}
     viewBox="0 0 24 24"
@@ -1350,7 +1350,7 @@ const Phone = ({ size = 24, ...props }) => (
 );
 const Info = ({ size = 24, ...props }) => (
   <svg
-    xmlns="http:
+    xmlns="http://www.w3.org/2000/svg"
     width={size}
     height={size}
     viewBox="0 0 24 24"
